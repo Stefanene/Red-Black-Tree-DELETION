@@ -1,7 +1,9 @@
 /*
-  This is a Red-Black Tree Insertion and Deletion algorithm by Stefan Ene
+  This is a Red-Black Tree Insertion algorithm by Stefan Ene
    Works Cited:
-    Using the whole Red-Black Tree Insertion Code
+    Using most of the base code from my Binary Search Tree algorithm
+    Colored output from https://stackoverflow.com/questions/9158150/colored-output-in-c/9158263
+    Balancing Tree references from https://www.geeksforgeeks.org/c-program-red-black-tree-insertion/
 */
 
 #include <iostream>
@@ -41,6 +43,7 @@ void ADD(Node* &head, Node* &curr, Node*& prev, int val, int &height);
 void READ(Node* &head, int &height);
 void PRINT(Node* root, Trunk *prev, bool isLeft);
 void parse(char* in, int* modif, int &count);
+void SEARCH(Node* curr, int val);
 //functions for balancing/fixing tree
 void balance(Node* &head, Node* &curr);
 void rotateLeft(Node* &head, Node* &curr);
@@ -61,7 +64,7 @@ int main() {
   while (run) {
     //cout << RED << "hello world" << RESET << endl;
     //cout << BLUE << "YO" << RESET << endl;
-    cout << endl << "You can: add, read, print, and quit." << endl;
+    cout << endl << "You can: add, read, print, search, delete and quit." << endl;
     cin.get(input, 10);
     cin.clear();
     cin.ignore(10000, '\n');
@@ -86,6 +89,17 @@ int main() {
       cout << "=========================" << endl;
       PRINT(head, NULL, false);
       cout << "=========================" << endl;
+    }
+    else if (strcmp(input, "search") == 0) {
+      int val;
+      cout << ">Input value to search for: ";
+      cin >> val;
+      cin.clear();
+      cin.ignore(10000, '\n');
+      SEARCH(head, val);
+    }
+    else if (strcmp(input, "delete") == 0) {
+      
     }
     else if (strcmp(input, "quit") == 0) {
       cout << endl << "Thanks for using my program!" << endl;
@@ -350,4 +364,24 @@ void parse(char* in, int* modif, int &count) {
       }
     }
   } 
+}
+
+void SEARCH(Node* curr, int val) {
+  if (val == curr->getData()) {
+    cout << endl << val << " is in this tree." << endl;
+  }
+  else if (val < curr->getData()) {  //lower goes left
+    if (curr->getLeft() != NULL) {
+      SEARCH(curr->getLeft(), val);  //recursion
+    } else {
+      cout << endl << val << "is NOT in the tree." << endl;
+    }
+  }
+  else {  //higher goes right
+    if (curr->getRight() != NULL) {
+      SEARCH(curr->getRight(), val);  //recursion
+    } else {
+      cout << endl << val << " is NOT in the tree." << endl;
+    }
+  }
 }
