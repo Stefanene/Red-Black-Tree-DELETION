@@ -1,9 +1,10 @@
 /*
-  This is a Red-Black Tree Insertion algorithm by Stefan Ene
+  This is a Red-Black Tree Insertion and Deletion algorithm by Stefan Ene
    Works Cited:
     Using most of the base code from my Binary Search Tree algorithm
     Colored output from https://stackoverflow.com/questions/9158150/colored-output-in-c/9158263
     Balancing Tree references from https://www.geeksforgeeks.org/c-program-red-black-tree-insertion/
+    Deletion method implemented similarly to my BTS project (see citaton there)
 */
 
 #include <iostream>
@@ -44,7 +45,7 @@ void READ(Node* &head, int &height);
 void PRINT(Node* root, Trunk *prev, bool isLeft);
 void parse(char* in, int* modif, int &count);
 bool SEARCH(Node* curr, int val);
-void DELETE(Node* &curr, int val);
+root DELETE(Node* &root, int val);
 //functions for balancing/fixing tree
 void balance(Node* &head, Node* &curr);
 void rotateLeft(Node* &head, Node* &curr);
@@ -65,7 +66,7 @@ int main() {
   while (run) {
     //cout << RED << "hello world" << RESET << endl;
     //cout << BLUE << "YO" << RESET << endl;
-    cout << endl << "You can: add, read, print, search, delete and quit." << endl;
+    cout << endl << "You can: add, read, print, search, delete, and quit." << endl;
     cin.get(input, 10);
     cin.clear();
     cin.ignore(10000, '\n');
@@ -115,7 +116,7 @@ int main() {
 	if (s == false) {
 	  cout << endl << "Value not found, try agian." << endl;
 	} else {
-	  DELETE(head, val);
+	  head = DELETE(head, val);
 	  break;
 	}
       }
@@ -403,4 +404,50 @@ bool SEARCH(Node* curr, int val) {
       return false;
     }
   }
+}
+
+Node* DELETE(Node* &root, int val) {
+  Node* L = root->getLeft();
+  Node* R = root->getRight();
+  if(root == NULL) return root;
+  else if(val < root->getData()) root->setLeft(DELETE(L, val));  //if lower, reoccur left
+  else if(val > root->getData()) root->setRight(DELETE(R, val));  //if higher, reoccur right
+  else {  //if equal, node found -> do deletion
+    //no child
+    if (root->getRight() == NULL && root->getLeft() == NULL) {
+      //if red, just delete
+
+      //if black
+    }
+    //one child
+    else if (root->getLeft() == NULL) {  //right child exists
+      //if root = red, move child up 
+      //if root = black
+        //if child = red, move child up and make it black
+        //else child = black, move child up and:
+          //Case 1:just replace
+          //Case 2: sibling is red
+            //rotate through parent
+            //switch colors of parent and sibling
+          //Case 3: sibling is black
+            //color silbling red, recursively call case 1 on parent
+          //Case 4: parent = red, sibling and its children are black
+            //color parent balck and sibling red
+          //Case 5: sibling and siblingL are black, siblingR is red (sibling is parentR) OR
+                 // siblinf and siblingR are black, siblingL is red (sibling is parentL)
+            //rotate through sibling, change sibling to red and child to black
+          //Case 6: sibling is black, siblingL is red (sibling is parentR) OR
+                 // sibling is black, siblingR is red (sibling is parentL)
+            //rotate through parent
+            //switch colors of parent and sibling, siling's child becomes black
+    }
+    else if (root->getRight() == NULL) {  //left child exists
+      //same pseudo code like right child existing
+    }
+    //if 2 children exist
+    else {
+
+    }
+  }
+  return root;
 }
