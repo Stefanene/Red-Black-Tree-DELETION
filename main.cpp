@@ -43,7 +43,8 @@ void ADD(Node* &head, Node* &curr, Node*& prev, int val, int &height);
 void READ(Node* &head, int &height);
 void PRINT(Node* root, Trunk *prev, bool isLeft);
 void parse(char* in, int* modif, int &count);
-void SEARCH(Node* curr, int val);
+bool SEARCH(Node* curr, int val);
+void DELETE(Node* &curr, int val);
 //functions for balancing/fixing tree
 void balance(Node* &head, Node* &curr);
 void rotateLeft(Node* &head, Node* &curr);
@@ -96,10 +97,28 @@ int main() {
       cin >> val;
       cin.clear();
       cin.ignore(10000, '\n');
-      SEARCH(head, val);
+      bool s = SEARCH(head, val);
+      if (s == true) {
+	cout << val << " is in the tree." << endl;
+      } else {
+	cout << val << " is NOT in the tree." << endl;
+      }
     }
     else if (strcmp(input, "delete") == 0) {
-      
+      while (true) {
+	int val = 0;
+	cout << ">Input value to delete: ";
+	cin >> val;
+	cin.clear();
+	cin.ignore(10000, '\n');
+	bool d = SEARCH(head, val);
+	if (s == false) {
+	  cout << endl << "Value not found, try agian." << endl;
+	} else {
+	  DELETE(head, val);
+	  break;
+	}
+      }
     }
     else if (strcmp(input, "quit") == 0) {
       cout << endl << "Thanks for using my program!" << endl;
@@ -366,22 +385,22 @@ void parse(char* in, int* modif, int &count) {
   } 
 }
 
-void SEARCH(Node* curr, int val) {
+bool SEARCH(Node* curr, int val) {
   if (val == curr->getData()) {
-    cout << endl << val << " is in this tree." << endl;
+    return true;
   }
   else if (val < curr->getData()) {  //lower goes left
     if (curr->getLeft() != NULL) {
       SEARCH(curr->getLeft(), val);  //recursion
     } else {
-      cout << endl << val << "is NOT in the tree." << endl;
+      return false;
     }
   }
   else {  //higher goes right
     if (curr->getRight() != NULL) {
       SEARCH(curr->getRight(), val);  //recursion
     } else {
-      cout << endl << val << " is NOT in the tree." << endl;
+      return false;
     }
   }
 }
