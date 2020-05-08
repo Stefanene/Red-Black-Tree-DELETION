@@ -1,10 +1,8 @@
 /*
   This is a Red-Black Tree Insertion and Deletion algorithm by Stefan Ene
    Works Cited:
-    Using most of the base code from my Binary Search Tree algorithm
-    Colored output from https://stackoverflow.com/questions/9158150/colored-output-in-c/9158263
-    Balancing Tree references from https://www.geeksforgeeks.org/c-program-red-black-tree-insertion/
-    Deletion method implemented similarly to my BTS project (see citaton there)
+    Using all the code from my RBT Insertion
+    Deletion method implementation with help from https://www.geeksforgeeks.org/red-black-tree-set-3-delete-2/
 */
 
 #include <iostream>
@@ -40,12 +38,19 @@ void showTrunks(Trunk *p) {//helper method for printing
 }
 
 //functions
-void ADD(Node* &head, Node* &curr, Node*& prev, int val, int &height);
-void READ(Node* &head, int &height);
+void ADD(Node* &head, Node* &curr, Node*& prev, int val);
+void READ(Node* &head);
 void PRINT(Node* root, Trunk *prev, bool isLeft);
 void parse(char* in, int* modif, int &count);
 bool SEARCH(Node* curr, int val);
-root DELETE(Node* &root, int val);
+//functions for deletion
+void DELETE(Node* &head, Node* &v);
+Node* getSibling(Node* &x);
+Node* successor(Node* &x);
+Node* replaceNode(Node* &x);
+void fixDoubleBlack(Node* &head, Node* &x);
+bool hasRedChild(Node* &x);
+void swapNodeValues(Node* &u, Node* &v);
 //functions for balancing/fixing tree
 void balance(Node* &head, Node* &curr);
 void rotateLeft(Node* &head, Node* &curr);
@@ -58,7 +63,6 @@ int main() {
   char read[10000];  //file input
   int modif[100]; //parsed input for insertion
   Node* head = NULL;
-  int height = 0; //keep trach of tree height in terms of balck nodes
   //program
   cout << "=========================" << endl;
   cout << "Welcome to my Red-Black Tree INSERTION." << endl;
@@ -79,13 +83,13 @@ int main() {
       Node* curr = NULL;
       Node* prev = NULL;
       curr = head;
-      ADD(head, curr, prev, val, height);
-      balance(head, curr);
+      ADD(head, curr, prev, val);
+      if(curr != head) balance(head, curr);
       cout << endl << val << " has been added:" << endl;
     }
     else if (strcmp(input, "read") == 0) {
       //make sure arrays are clear
-      READ(head, height);
+      READ(head);
     }
     else if (strcmp(input, "print") == 0) {
       cout << "=========================" << endl;
@@ -113,10 +117,19 @@ int main() {
 	cin.clear();
 	cin.ignore(10000, '\n');
 	bool d = SEARCH(head, val);
-	if (s == false) {
+	if (d == false) {
 	  cout << endl << "Value not found, try agian." << endl;
 	} else {
-	  head = DELETE(head, val);
+	  //find node to be deleted
+	  Node* v = head;
+	  while (v->getData() != val) {
+	    if (val < v->getData()) {
+	      v = v->getLeft();
+	    } else if (val > v->getData()) {
+	      v = v->getRight();
+	    }
+	  }
+	  DELETE(head, v);
 	  break;
 	}
       }
@@ -239,12 +252,12 @@ void rotateRight(Node* &head, Node* & curr) {
 }
 
 //ADD method from my previous BTS project
-void ADD(Node* &head, Node* &curr, Node*& prev, int val, int &height) {
+void ADD(Node* &head, Node* &curr, Node*& prev, int val) {
   if (head == NULL) {
     head = new Node();
+    curr = head;
     head->setData(val);
     head->setColor(0);  //head is always black
-    height = 1; //height of one black node
     return;
   } else {
     if (val < curr->getData()) {  //lower goes left
@@ -258,7 +271,7 @@ void ADD(Node* &head, Node* &curr, Node*& prev, int val, int &height) {
 	balance(head, curr);  //balance tree
 	return;
       } else {  //if !empty then keep going
-	ADD(head, curr, prev, val, height);
+	ADD(head, curr, prev, val);
       }
     } else {
       prev = curr;
@@ -271,14 +284,14 @@ void ADD(Node* &head, Node* &curr, Node*& prev, int val, int &height) {
 	balance(head, curr);  //balance tree
 	return;
       } else {  //if !empty then keep going
-	ADD(head, curr, prev, val, height);
+	ADD(head, curr, prev, val);
       }
     }
   }
 }
 
 //READ function from file
-void READ(Node* &head, int &height) {
+void READ(Node* &head) {
   char in[10000];
   char fileName[100];
   int modif[100];
@@ -315,7 +328,7 @@ void READ(Node* &head, int &height) {
     for (int i = 0; i < siz; i++) {
       if(modif[i] == 0) break;
       curr = head;
-      ADD(head, curr, prev, modif[i], height);
+      ADD(head, curr, prev, modif[i]);
     }
   } 
 }
@@ -406,48 +419,188 @@ bool SEARCH(Node* curr, int val) {
   }
 }
 
-Node* DELETE(Node* &root, int val) {
-  Node* L = root->getLeft();
-  Node* R = root->getRight();
-  if(root == NULL) return root;
-  else if(val < root->getData()) root->setLeft(DELETE(L, val));  //if lower, reoccur left
-  else if(val > root->getData()) root->setRight(DELETE(R, val));  //if higher, reoccur right
-  else {  //if equal, node found -> do deletion
-    //no child
-    if (root->getRight() == NULL && root->getLeft() == NULL) {
-      //if red, just delete
+void swapValues(Node* &u, Node* &v) { 
+  //swap int values between the two given nodes
+  int temp; 
+  temp = u->getData(); 
+  u->setData(v->getData()); 
+  v->setData(temp); 
+}
 
-      //if black
-    }
-    //one child
-    else if (root->getLeft() == NULL) {  //right child exists
-      //if root = red, move child up 
-      //if root = black
-        //if child = red, move child up and make it black
-        //else child = black, move child up and:
-          //Case 1:just replace
-          //Case 2: sibling is red
-            //rotate through parent
-            //switch colors of parent and sibling
-          //Case 3: sibling is black
-            //color silbling red, recursively call case 1 on parent
-          //Case 4: parent = red, sibling and its children are black
-            //color parent balck and sibling red
-          //Case 5: sibling and siblingL are black, siblingR is red (sibling is parentR) OR
-                 // siblinf and siblingR are black, siblingL is red (sibling is parentL)
-            //rotate through sibling, change sibling to red and child to black
-          //Case 6: sibling is black, siblingL is red (sibling is parentR) OR
-                 // sibling is black, siblingR is red (sibling is parentL)
-            //rotate through parent
-            //switch colors of parent and sibling, siling's child becomes black
-    }
-    else if (root->getRight() == NULL) {  //left child exists
-      //same pseudo code like right child existing
-    }
-    //if 2 children exist
-    else {
+Node* getSibling(Node* &v) {
+  if (v->getParent() == NULL) {
+    return NULL;
+  }
+  if (v == v->getParent()->getLeft()) {
+    return v->getParent()->getRight();
+  } else {
+    return v->getParent()->getLeft();
+  }
+}
 
+Node* successor(Node* &x) {
+  //get left most value of right subtree
+  Node* a = x;
+  while (a->getLeft() != NULL) {
+    a = a->getLeft();
+  }
+  return a;
+}
+
+Node* replaceNode(Node* &x) {
+  //if node has 2 children 
+  if (x->getLeft() != NULL && x->getRight() != NULL) {
+    Node* r = x->getRight();
+    return successor(r); 
+  }
+  //if node has no children 
+  if (x->getLeft() == NULL && x->getRight() == NULL) {
+    return NULL;
+  }
+  //if node had one child 
+  if (x->getLeft() != NULL) { 
+    return x->getLeft();
+  } else {
+    return x->getRight();
+  }
+}
+
+void DELETE(Node* &head, Node* &v) {
+  Node* u = replaceNode(v);
+  Node* parent = v->getParent();
+  //make bool that keeps track of both black
+  bool bothBlack = ((u==NULL || u->getColor()==0) && (v==NULL || v->getColor()==0));
+
+  //if v has no children
+  if (u == NULL) {
+    if (v == head) {
+      //make head null
+      head = NULL;
+    } else {
+      if (bothBlack) {
+	fixDoubleBlack(head, v);
+      } else {
+	//one is red
+	//then make sibling red
+	if (getSibling(v) != NULL)
+	  getSibling(v)->setColor(1);
+      }
+      //delete v from tree
+      if (v == parent->getLeft()) {
+	parent->setLeft(NULL);
+      } else {
+	parent->setRight(NULL);
+      }
+    }
+    //delete v
+    return;
+  }
+
+  //if v has 1 child
+  if (v->getRight() == NULL || v->getLeft() == NULL) {
+    if (v == head) {
+      //assign value of u to v
+      v->setData(u->getData());
+      v->setLeft(NULL);
+      v->setRight(NULL);
+      //delete u
+    } else {
+      //detach v from tree and move u up
+      if (v == parent->getLeft()) {
+	parent->setLeft(u);
+      } else {
+	parent->setRight(u);
+      }
+      //delete v
+      u->setParent(parent);
+      if(bothBlack) {
+	fixDoubleBlack(head, u);
+      } else {
+	//if one is red, color u black
+	u->setColor(0);
+      }
+    }
+    return;
+  }
+
+  //if program got here, v has two children
+  //then, swap with successor and recurse
+  swapValues(u, v);
+  DELETE(head, u);
+}
+
+void fixDoubleBlack(Node* &head, Node* &x) {
+  if (x == head)
+    return;
+
+  Node* sibling = getSibling(x);
+  Node* parent = x->getParent();
+
+  if (sibling == NULL) {
+    //if no sibling, push doublebalck up
+    fixDoubleBlack(head, parent);
+  } else {
+    if (sibling->getColor() == 1) {
+      //silbing is red
+      parent->setColor(1); //red
+      sibling->setColor(0); //black
+      if (sibling == parent->getLeft()) {
+	rotateRight(head, parent);
+      } else {
+	rotateLeft(head, parent);
+      }
+      fixDoubleBlack(head, x);
+    } else {
+      //sibling is black
+      if (hasRedChild(sibling)) {
+	//has at least 1 red child
+	if (sibling->getLeft() != NULL && sibling->getLeft()->getColor() == 1) {
+	  //sibling's left child is red
+	  if (sibling == parent->getLeft()) {
+	    //left left
+	    sibling->getLeft()->setColor(sibling->getColor());
+	    sibling->setColor(parent->getColor());
+	    rotateRight(head, parent);
+	  } else {
+	    //right left
+	    sibling->getLeft()->setColor(parent->getColor());
+	    rotateRight(head, sibling);
+	    rotateLeft(head, parent);
+	  }
+	} else {
+	  //sibling's right child is red
+	  if (sibling == parent->getRight()) {
+	    //left right
+	    sibling->getRight()->setColor(parent->getColor());
+	    rotateLeft(head, sibling);
+	    rotateRight(head, parent);
+	  } else {
+	    //right right
+	    sibling->getRight()->setColor(sibling->getColor());
+	    sibling->setColor(parent->getColor());
+	    rotateLeft(head, parent);
+	  }
+	}
+	parent->setColor(0); //black
+      } else {
+	//two black children
+	sibling->setColor(1); //red
+	if (parent->getColor() == 0) {
+	  fixDoubleBlack(head, parent); //recursion
+	} else {
+	  parent->setColor(0); //black
+	}
+      }
     }
   }
-  return root;
+}
+
+bool hasRedChild(Node* &x) { 
+  if (x->getLeft() != NULL && x->getLeft()->getColor() == 1) {
+    return true;
+  } else if (x->getRight() != NULL && x->getRight()->getColor() == 1) {
+    return true;
+  } else {
+    return false;
+  }
 }
