@@ -454,14 +454,16 @@ Node* replaceNode(Node* &x) {
     return successor(r); 
   }
   //if node has no children 
-  if (x->getLeft() == NULL && x->getRight() == NULL) {
+  else if (x->getLeft() == NULL && x->getRight() == NULL) {
     return NULL;
   }
   //if node had one child 
-  if (x->getLeft() != NULL) { 
-    return x->getLeft();
-  } else {
-    return x->getRight();
+  else {
+    if (x->getLeft() != NULL) { 
+      return x->getLeft();
+    } else {
+      return x->getRight();
+    }
   }
 }
 
@@ -471,8 +473,8 @@ void DELETE(Node* &head, Node* &v) {
   //make bool that keeps track of both black
   bool bothBlack = ((u==NULL || u->getColor()==0) && (v==NULL || v->getColor()==0));
 
-  //if v has no children
   if (u == NULL) {
+    //then v has no children
     if (v == head) {
       //make head null
       head = NULL;
@@ -493,6 +495,7 @@ void DELETE(Node* &head, Node* &v) {
       }
     }
     //delete v
+    v->~Node();
     return;
   }
 
@@ -504,6 +507,7 @@ void DELETE(Node* &head, Node* &v) {
       v->setLeft(NULL);
       v->setRight(NULL);
       //delete u
+      u->~Node();
     } else {
       //detach v from tree and move u up
       if (v == parent->getLeft()) {
@@ -512,6 +516,7 @@ void DELETE(Node* &head, Node* &v) {
 	parent->setRight(u);
       }
       //delete v
+      v->~Node();
       u->setParent(parent);
       if(bothBlack) {
 	fixDoubleBlack(head, u);

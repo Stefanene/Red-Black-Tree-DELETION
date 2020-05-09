@@ -14,10 +14,19 @@ Node::Node() {
 }
 
 Node::~Node() {
+  //delete parent's pointer to this
+  if (this->getParent() != NULL) {
+    if (this == this->getParent()->getLeft()) {
+      this->getParent()->setLeft(NULL);
+    } else if (this == this->getParent()->getRight()) {
+      this->getParent()->setRight(NULL);
+    }
+  }
   //deleter
   right = NULL;
   left = NULL;
   parent = NULL;
+  data = 0;
 }
 
 //setters
