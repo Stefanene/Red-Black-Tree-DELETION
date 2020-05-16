@@ -65,7 +65,7 @@ int main() {
   Node* head = NULL;
   //program
   cout << "=========================" << endl;
-  cout << "Welcome to my Red-Black Tree INSERTION." << endl;
+  cout << "Welcome to my Red-Black Tree DELETION." << endl;
   bool run = true;
   while (run) {
     //cout << RED << "hello world" << RESET << endl;
