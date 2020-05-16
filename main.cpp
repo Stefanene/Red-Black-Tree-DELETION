@@ -574,7 +574,7 @@ void fixDoubleBlack(Node* &head, Node* &x) {
 	  }
 	} else {
 	  //sibling's right child is red
-	  if (sibling == parent->getRight()) {
+	  if (sibling == parent->getLeft()) {
 	    //left right
 	    sibling->getRight()->setColor(parent->getColor());
 	    rotateLeft(head, sibling);
